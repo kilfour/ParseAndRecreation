@@ -1,0 +1,11 @@
+**/bin/*
+**/obj/*
+/packages
+**/log*.txt
+temp*.md
+*.log
+*.qr
+*.qv
+.vscode/
+.quickacid/
+.quickpulse/
