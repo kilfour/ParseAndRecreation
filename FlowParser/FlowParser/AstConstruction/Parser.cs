@@ -1,5 +1,5 @@
-using FlowParser.AstConstruction.AstNodes;
-using FlowParser.Lexing;
+using Definitions.AstNodes;
+using Definitions.Lexing;
 using QuickPulse;
 using QuickPulse.Arteries;
 

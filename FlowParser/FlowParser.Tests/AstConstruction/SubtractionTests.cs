@@ -1,4 +1,5 @@
-using FlowParser.AstConstruction.AstNodes;
+using Definitions.AstNodes;
+
 
 namespace FlowParser.Tests.AstConstruction;
 

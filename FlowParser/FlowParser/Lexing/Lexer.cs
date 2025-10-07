@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Definitions.Lexing;
 using QuickPulse;
 using QuickPulse.Arteries;
 

@@ -1,4 +1,4 @@
-using RegularParser.AstConstruction.AstNodes;
+using Definitions.AstNodes;
 
 namespace RegularParser.Tests.AstConstruction;
 

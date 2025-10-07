@@ -1,5 +1,6 @@
+using Definitions.AstNodes;
 using FlowParser.AstConstruction;
-using FlowParser.AstConstruction.AstNodes;
+
 using FlowParser.Lexing;
 
 namespace FlowParser;

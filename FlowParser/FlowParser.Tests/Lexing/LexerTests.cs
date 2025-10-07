@@ -1,4 +1,5 @@
-﻿using FlowParser.Lexing;
+﻿using Definitions.Lexing;
+using FlowParser.Lexing;
 
 namespace FlowParser.Tests.Lexing;
 

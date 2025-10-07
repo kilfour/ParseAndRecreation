@@ -1,4 +1,4 @@
-namespace FlowParser.AstConstruction.AstNodes;
+namespace Definitions.AstNodes;
 
 public record UnaryMinus(AstNode Value) : AstNode;
 

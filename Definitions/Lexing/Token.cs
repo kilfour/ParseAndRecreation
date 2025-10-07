@@ -1,4 +1,4 @@
-namespace RegularParser.Lexing;
+namespace Definitions.Lexing;
 
 public record Token(TokenKind Kind, string Text, int Offset)
 {

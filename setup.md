@@ -24,3 +24,9 @@ dotnet add RegularParser.Tests/RegularParser.Tests.csproj reference RegularParse
 cd ..
 dotnet sln add RegularParser/RegularParser/RegularParser.csproj
 dotnet sln add RegularParser/RegularParser.Tests/RegularParser.Tests.csproj
+
+
+dotnet new classlib -n Definitions --framework net8.0
+dotnet sln add Definitions/Definitions.csproj
+dotnet add RegularParser/RegularParser/RegularParser.csproj reference Definitions/Definitions.csproj
+dotnet add FlowParser/FlowParser/FlowParser.csproj reference Definitions/Definitions.csproj
