@@ -13,15 +13,11 @@ public sealed class Parser
         from _ in flow(token)
         select token;
 
-    private static readonly Flow<Token> onNumber =
-        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.PushNumber(a.Text)));
+    private static Flow<Unit> Manipulate(Func<ParseState, ParseState> manipulate) =>
+        TokenFlow(a => Pulse.Manipulate(manipulate)).Then(Pulse.NoOp());
 
-    private static Flow<Token> onOperator =>
-        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.PushOperator(a.Kind)));
-    private static readonly Flow<Token> onLParen =
-        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.OpenParen()));
-    private static readonly Flow<Token> onRParen =
-        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.CloseParen()));
+    private static Flow<Unit> Manipulate(Func<Token, ParseState, ParseState> manipulate) =>
+        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => manipulate(a, ctx))).Then(Pulse.NoOp());
 
     private static readonly Flow<Token> onEnd =
         from token in Pulse.Start<Token>()
@@ -29,26 +25,15 @@ public sealed class Parser
         from _ in Pulse.Trace(ctx.Value.Finish())
         select token;
 
-    private static readonly TokenKind[] operators =
-        [ TokenKind.Plus
-        , TokenKind.Minus
-        , TokenKind.Star
-        , TokenKind.Slash
-        , TokenKind.Caret
-        ];
-
-    private static bool IsOperator(Token token)
-        => operators.Contains(token.Kind);
-
     private static readonly Flow<Token> flow =
         from token in Pulse.Start<Token>()
         from _ in Pulse.Gather(new ParseState())
         from __ in Pulse.FirstOf(
-            (() => token.Kind == TokenKind.Number, () => Pulse.ToFlow(onNumber, token)),
-            (() => IsOperator(token), () => Pulse.ToFlow(onOperator, token)),
-            (() => token.Kind == TokenKind.LeftParenthesis, () => Pulse.ToFlow(onLParen, token)),
-            (() => token.Kind == TokenKind.RightParenthesis, () => Pulse.ToFlow(onRParen, token)),
-            (() => token.Kind == TokenKind.End, () => Pulse.ToFlow(onEnd, token))
+            (() => token.Kind == TokenKind.Number, /**/ () => Manipulate((a, ctx) => ctx.PushNumber(a.Text))),
+            (() => token.IsOperator,               /**/ () => Manipulate((a, ctx) => ctx.PushOperator(a.Kind))),
+            (() => token.Kind == TokenKind.LParen, /**/ () => Manipulate(ctx => ctx.OpenParen())),
+            (() => token.Kind == TokenKind.RParen, /**/ () => Manipulate(ctx => ctx.CloseParen())),
+            (() => token.Kind == TokenKind.End,    /**/ () => Pulse.ToFlow(onEnd, token))
         )
         select token;
 

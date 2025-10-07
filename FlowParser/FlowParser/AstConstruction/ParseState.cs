@@ -34,7 +34,7 @@ public sealed class ParseState
         if (IsUnaryMinus(op))
             op = TokenKind.UnaryMinus;
 
-        while (Operators.Count > 0 && Operators.Peek() != TokenKind.LeftParenthesis)
+        while (Operators.Count > 0 && Operators.Peek() != TokenKind.LParen)
         {
             var top = Operators.Peek();
             var cond = IsRightAssociative(op)
@@ -52,7 +52,7 @@ public sealed class ParseState
     private bool IsUnaryMinus(TokenKind op) =>
         op == TokenKind.Minus && (
            lastToken is null
-        || lastToken is TokenKind.LeftParenthesis
+        || lastToken is TokenKind.LParen
         || lastToken is TokenKind.Plus
         || lastToken is TokenKind.Minus
         || lastToken is TokenKind.Star
@@ -62,18 +62,18 @@ public sealed class ParseState
 
     public ParseState OpenParen()
     {
-        Operators.Push(TokenKind.LeftParenthesis);
-        lastToken = TokenKind.LeftParenthesis;
+        Operators.Push(TokenKind.LParen);
+        lastToken = TokenKind.LParen;
         return this;
     }
 
     public ParseState CloseParen()
     {
-        while (Operators.Count > 0 && Operators.Peek() != TokenKind.LeftParenthesis)
+        while (Operators.Count > 0 && Operators.Peek() != TokenKind.LParen)
             ApplyTop();
-        if (Operators.Count == 0 || Operators.Pop() != TokenKind.LeftParenthesis)
+        if (Operators.Count == 0 || Operators.Pop() != TokenKind.LParen)
             throw new Exception("Mismatched parentheses");
-        lastToken = TokenKind.RightParenthesis;
+        lastToken = TokenKind.RParen;
         return this;
     }
 
@@ -81,7 +81,7 @@ public sealed class ParseState
     {
         while (Operators.Count > 0)
         {
-            if (Operators.Peek() == TokenKind.LeftParenthesis)
+            if (Operators.Peek() == TokenKind.LParen)
                 throw new Exception("Mismatched parentheses");
             ApplyTop();
         }

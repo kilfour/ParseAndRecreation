@@ -9,6 +9,6 @@ public enum TokenKind
     Star,
     Slash,
     Caret,
-    LeftParenthesis, RightParenthesis,
+    LParen, RParen,
     UnaryMinus
 }

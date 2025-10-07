@@ -9,8 +9,8 @@ public static partial class Lexer
 {
     private static Dictionary<char, Func<int, Token>> singleChars =
         new() {
-            { '(',  a => new Token(TokenKind.LeftParenthesis, "(", a) },
-            { ')',  a => new Token(TokenKind.RightParenthesis, ")", a) },
+            { '(',  a => new Token(TokenKind.LParen, "(", a) },
+            { ')',  a => new Token(TokenKind.RParen, ")", a) },
             { '+',  a => new Token(TokenKind.Plus, "+", a) },
             { '-',  a => new Token(TokenKind.Minus, "-", a) },
             { '*',  a => new Token(TokenKind.Star, "*", a) },
