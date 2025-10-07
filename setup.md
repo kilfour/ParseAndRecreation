@@ -13,3 +13,14 @@ dotnet add FlowParser.Tests/FlowParser.Tests.csproj reference FlowParser/FlowPar
 cd ..
 dotnet sln add FlowParser/FlowParser/FlowParser.csproj
 dotnet sln add FlowParser/FlowParser.Tests/FlowParser.Tests.csproj
+
+
+md RegularParser
+cd RegularParser
+dotnet new classlib -n RegularParser --framework net8.0
+dotnet new xunit -n RegularParser.Tests --framework net8.0
+dotnet add RegularParser.Tests/RegularParser.Tests.csproj reference RegularParser/RegularParser.csproj
+
+cd ..
+dotnet sln add RegularParser/RegularParser/RegularParser.csproj
+dotnet sln add RegularParser/RegularParser.Tests/RegularParser.Tests.csproj
