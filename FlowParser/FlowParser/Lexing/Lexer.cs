@@ -1,10 +1,11 @@
+using System.Text.RegularExpressions;
 using QuickPulse;
 using QuickPulse.Arteries;
 using QuickPulse.Bolts;
 
 namespace FlowParser.Lexing;
 
-public static class Lexer
+public static partial class Lexer
 {
     private static Dictionary<char, Func<int, Token>> singleChars =
         new() {
@@ -24,8 +25,15 @@ public static class Lexer
         from _ in Pulse.Manipulate<string>(a => a + input)
         select input;
 
+    [GeneratedRegex(@"^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$", RegexOptions.Compiled)]
+    private static partial Regex IsDecimalRegex();
+    private static bool IsValidDecimal(string s) => IsDecimalRegex().IsMatch(s);
+
     private static readonly Flow<char> flushNumber =
         from input in Pulse.Start<char>()
+        from valid in Pulse.EffectIf<string>(
+            a => a != string.Empty && !IsValidDecimal(a),
+            () => throw new Exception($"Invalid decimal"))
         from _ in Pulse.TraceIf<string>(
             a => a != string.Empty,
             a => new Token(TokenKind.Number, a, 666))
@@ -54,4 +62,7 @@ public static class Lexer
             .Pulse(input.Append('\0'))
             .GetArtery<TheCollector<Token>>()
             .TheExhibit;
+
 }
+
+

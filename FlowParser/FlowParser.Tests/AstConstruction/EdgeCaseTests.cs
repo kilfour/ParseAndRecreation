@@ -4,35 +4,33 @@ namespace FlowParser.Tests.AstConstruction;
 
 public class EdgeCaseTests
 {
-    [Fact(Skip = "Not Implemented")]
+    [Fact]
     public void UnaryMinus_Simple()
     {
         var ast = LostIn.Translation("-3");
-        var node = Assert.IsType<Subtraction>(ast);
+        var node = Assert.IsType<UnaryMinus>(ast);
         //      (-)
-        //     /   \
-        //    0     3
-        Assert.Equal(0, Assert.IsType<Number>(node.Left).Value);
-        Assert.Equal(3, Assert.IsType<Number>(node.Right).Value);
+        //       |
+        //       3
+        Assert.Equal(3, Assert.IsType<Number>(node.Value).Value);
     }
 
-    [Fact(Skip = "Not Implemented")]
+    [Fact]
     public void UnaryMinus_OnParenthesized()
     {
         var ast = LostIn.Translation("-(1+2)");
-        var node = Assert.IsType<Subtraction>(ast);
+        var node = Assert.IsType<UnaryMinus>(ast);
         //      (-)
+        //       |
+        //      (+)
         //     /   \
-        //    0    (+)
-        //        /   \
-        //       1     2
-        Assert.Equal(0, Assert.IsType<Number>(node.Left).Value);
-        var add = Assert.IsType<Addition>(node.Right);
+        //    1     2
+        var add = Assert.IsType<Addition>(node.Value);
         Assert.Equal(1, Assert.IsType<Number>(add.Left).Value);
         Assert.Equal(2, Assert.IsType<Number>(add.Right).Value);
     }
 
-    [Fact(Skip = "Not Implemented")]
+    [Fact]
     public void UnaryMinus_BindsTighterThan_Add()
     {
         var ast = LostIn.Translation("1+-2");
@@ -40,31 +38,29 @@ public class EdgeCaseTests
         //      (+)
         //     /   \
         //    1    (-)
-        //        /   \
-        //       0     2
+        //          |
+        //          2
         Assert.Equal(1, Assert.IsType<Number>(node.Left).Value);
-        var neg = Assert.IsType<Subtraction>(node.Right);
-        Assert.Equal(0, Assert.IsType<Number>(neg.Left).Value);
-        Assert.Equal(2, Assert.IsType<Number>(neg.Right).Value);
+        var neg = Assert.IsType<UnaryMinus>(node.Right);
+        Assert.Equal(2, Assert.IsType<Number>(neg.Value).Value);
     }
 
-    [Fact(Skip = "Not Implemented")]
+    [Fact]
     public void Power_Vs_UnaryMinus()
     {
-        var ast = LostIn.Translation("-2^2");
-        var node = Assert.IsType<Subtraction>(ast);
-        //       (-)
+        var ast = LostIn.Translation("-1^2");
+        var node = Assert.IsType<Power>(ast);
+        //       (^)
         //      /   \
-        //     0    (^)
-        //         /   \
-        //        2     2
-        Assert.Equal(0, Assert.IsType<Number>(node.Left).Value);
-        var pow = Assert.IsType<Power>(node.Right);
-        Assert.Equal(2, Assert.IsType<Number>(pow.Left).Value);
-        Assert.Equal(2, Assert.IsType<Number>(pow.Right).Value);
+        //    (-)     2
+        //     |
+        //     1
+        var min = Assert.IsType<UnaryMinus>(node.Left);
+        Assert.Equal(1, Assert.IsType<Number>(min.Value).Value);
+        Assert.Equal(2, Assert.IsType<Number>(node.Right).Value);
     }
 
-    [Fact(Skip = "Not Implemented")]
+    [Fact]
     public void Parenthesized_Negative_ToPower()
     {
         var ast = LostIn.Translation("(-2)^2");
@@ -72,11 +68,10 @@ public class EdgeCaseTests
         //        (^)
         //       /   \
         //     (-)    2
-        //    /   \²
-        //   0     2
-        var neg = Assert.IsType<Subtraction>(node.Left);
-        Assert.Equal(0, Assert.IsType<Number>(neg.Left).Value);
-        Assert.Equal(2, Assert.IsType<Number>(neg.Right).Value);
+        //      |
+        //      2
+        var neg = Assert.IsType<UnaryMinus>(node.Left);
+        Assert.Equal(2, Assert.IsType<Number>(neg.Value).Value);
         Assert.Equal(2, Assert.IsType<Number>(node.Right).Value);
     }
 
@@ -125,13 +120,13 @@ public class EdgeCaseTests
         Assert.Equal(2.0, Assert.IsType<Number>(node.Right).Value);
     }
 
-    [Fact(Skip = "Not Implemented")]
+    [Fact]
     public void Decimal_Edge_Invalid_LeadingDot()
     {
         Assert.Throws<Exception>(() => LostIn.Translation(".5+1"));
     }
 
-    [Fact(Skip = "Not Implemented")]
+    [Fact]
     public void Decimal_Edge_Invalid_TrailingDot()
     {
         Assert.Throws<Exception>(() => LostIn.Translation("1.+2"));
