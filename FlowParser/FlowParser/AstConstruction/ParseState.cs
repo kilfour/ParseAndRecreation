@@ -31,18 +31,8 @@ public sealed class ParseState
 
     public ParseState PushOperator(TokenKind op)
     {
-        if (op == TokenKind.Minus &&
-            (lastToken is null
-             || lastToken is TokenKind.LeftParenthesis
-             || lastToken is TokenKind.Plus
-             || lastToken is TokenKind.Minus
-             || lastToken is TokenKind.Star
-             || lastToken is TokenKind.Slash
-             || lastToken is TokenKind.Caret
-             || lastToken is TokenKind.UnaryMinus))
-        {
+        if (IsUnaryMinus(op))
             op = TokenKind.UnaryMinus;
-        }
 
         while (Operators.Count > 0 && Operators.Peek() != TokenKind.LeftParenthesis)
         {
@@ -58,6 +48,17 @@ public sealed class ParseState
         lastToken = op;
         return this;
     }
+
+    private bool IsUnaryMinus(TokenKind op) =>
+        op == TokenKind.Minus && (
+           lastToken is null
+        || lastToken is TokenKind.LeftParenthesis
+        || lastToken is TokenKind.Plus
+        || lastToken is TokenKind.Minus
+        || lastToken is TokenKind.Star
+        || lastToken is TokenKind.Slash
+        || lastToken is TokenKind.Caret
+        || lastToken is TokenKind.UnaryMinus);
 
     public ParseState OpenParen()
     {
