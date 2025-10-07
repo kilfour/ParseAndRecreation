@@ -19,18 +19,21 @@ jobs:
       - name: Build
         run: dotnet build -c Release --no-restore
 
-      - name: Test + Coverage (Coverlet)
-        run: >
-          dotnet test -c Release --no-build
-          /p:CollectCoverage=true
-          /p:CoverletOutputFormat=cobertura
-          /p:CoverletOutput=artifacts/coverage/
+      - name: Test (no build)
+        run: dotnet test -c Release --no-build
+
+      - name: dotnet-coverage (collect Cobertura)
+        run: |
+            dotnet tool install -g dotnet-coverage
+            mkdir -p artifacts/coverage
+            ~/.dotnet/tools/dotnet-coverage collect 'dotnet test -c Release --no-build' \
+            -f cobertura -o artifacts/coverage/coverage.cobertura.xml
 
       - name: ReportGenerator (HTML + text summary)
         run: |
-          dotnet tool install -g dotnet-reportgenerator-globaltool
-          ~/.dotnet/tools/reportgenerator \
-            -reports:'**/artifacts/coverage/coverage.cobertura.xml' \
+            dotnet tool install -g dotnet-reportgenerator-globaltool
+            ~/.dotnet/tools/reportgenerator \
+            -reports:'artifacts/coverage/coverage.cobertura.xml' \
             -targetdir:'artifacts/coverage-report' \
             -reporttypes:'HtmlInline;TextSummary'
 
