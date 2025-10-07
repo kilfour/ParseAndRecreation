@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using QuickPulse;
 using QuickPulse.Arteries;
-using QuickPulse.Bolts;
 
 namespace FlowParser.Lexing;
 
