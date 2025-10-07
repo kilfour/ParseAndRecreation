@@ -1,5 +1,4 @@
 ﻿using Definitions.Lexing;
-using RegularParser.Lexing;
 
 namespace RegularParser.Tests.Lexing;
 

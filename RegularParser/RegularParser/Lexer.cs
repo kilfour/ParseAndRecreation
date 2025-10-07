@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Definitions.Lexing;
 
-namespace RegularParser.Lexing;
+namespace RegularParser;
 
 public static partial class Lexer
 {

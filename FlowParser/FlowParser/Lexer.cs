@@ -3,7 +3,7 @@ using Definitions.Lexing;
 using QuickPulse;
 using QuickPulse.Arteries;
 
-namespace FlowParser.Lexing;
+namespace FlowParser;
 
 public static partial class Lexer
 {

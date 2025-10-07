@@ -3,7 +3,7 @@ using Definitions.Lexing;
 using QuickPulse;
 using QuickPulse.Arteries;
 
-namespace FlowParser.AstConstruction;
+namespace FlowParser;
 
 public sealed class Parser
 {

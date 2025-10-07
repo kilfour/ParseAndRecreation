@@ -1,16 +1,47 @@
 using Definitions.AstNodes;
 using Definitions.Lexing;
 
-namespace FlowParser.AstConstruction;
+namespace RegularParser;
 
-public sealed class ParseState
+public class Parser
 {
-    public Stack<AstNode> Values { get; } = new();
-    public Stack<TokenKind> Operators { get; } = new();
+    public AstNode Parse(IEnumerable<Token> tokens)
+    {
+        foreach (var token in tokens)
+        {
+            if (token.Kind == TokenKind.Number)
+            {
+                PushNumber(token.Text);
+                continue;
+            }
+
+            if (token.IsOperator)
+            {
+                PushOperator(token.Kind);
+                continue;
+            }
+
+            if (token.Kind == TokenKind.LParen)
+            {
+                OpenParen();
+                continue;
+            }
+
+            if (token.Kind == TokenKind.RParen)
+            {
+                CloseParen();
+                continue;
+            }
+        }
+        return Finish();
+    }
+
+    private Stack<AstNode> Values { get; } = new();
+    private Stack<TokenKind> Operators { get; } = new();
 
     private TokenKind? lastToken;
 
-    public static int Precedence(TokenKind kind) => kind switch
+    private static int Precedence(TokenKind kind) => kind switch
     {
         TokenKind.UnaryMinus => 5,
         TokenKind.Caret => 4,
@@ -19,17 +50,16 @@ public sealed class ParseState
         _ => 0
     };
 
-    public static bool IsRightAssociative(TokenKind kind) =>
+    private static bool IsRightAssociative(TokenKind kind) =>
         kind is TokenKind.Caret or TokenKind.UnaryMinus;
 
-    public ParseState PushNumber(string text)
+    private void PushNumber(string text)
     {
         Values.Push(new Number(double.Parse(text, System.Globalization.CultureInfo.InvariantCulture)));
         lastToken = TokenKind.Number;
-        return this;
     }
 
-    public ParseState PushOperator(TokenKind op)
+    private void PushOperator(TokenKind op)
     {
         if (IsUnaryMinus(op))
             op = TokenKind.UnaryMinus;
@@ -46,7 +76,6 @@ public sealed class ParseState
 
         Operators.Push(op);
         lastToken = op;
-        return this;
     }
 
     private bool IsUnaryMinus(TokenKind op) =>
@@ -60,24 +89,22 @@ public sealed class ParseState
         || lastToken is TokenKind.Caret
         || lastToken is TokenKind.UnaryMinus);
 
-    public ParseState OpenParen()
+    private void OpenParen()
     {
         Operators.Push(TokenKind.LParen);
         lastToken = TokenKind.LParen;
-        return this;
     }
 
-    public ParseState CloseParen()
+    private void CloseParen()
     {
         while (Operators.Count > 0 && Operators.Peek() != TokenKind.LParen)
             ApplyTop();
         if (Operators.Count == 0 || Operators.Pop() != TokenKind.LParen)
             throw new Exception("Mismatched parentheses");
         lastToken = TokenKind.RParen;
-        return this;
     }
 
-    public AstNode Finish()
+    private AstNode Finish()
     {
         while (Operators.Count > 0)
         {
