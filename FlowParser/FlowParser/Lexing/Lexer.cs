@@ -62,7 +62,6 @@ public static partial class Lexer
             .Pulse(input.Append('\0'))
             .GetArtery<TheCollector<Token>>()
             .TheExhibit;
-
 }
 
 

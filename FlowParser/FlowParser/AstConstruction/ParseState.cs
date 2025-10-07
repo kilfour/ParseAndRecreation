@@ -8,7 +8,7 @@ public sealed class ParseState
     public Stack<AstNode> Values { get; } = new();
     public Stack<TokenKind> Operators { get; } = new();
 
-    private TokenKind? _lastToken;
+    private TokenKind? lastToken;
 
     public static int Precedence(TokenKind kind) => kind switch
     {
@@ -25,21 +25,21 @@ public sealed class ParseState
     public ParseState PushNumber(string text)
     {
         Values.Push(new Number(double.Parse(text, System.Globalization.CultureInfo.InvariantCulture)));
-        _lastToken = TokenKind.Number;
+        lastToken = TokenKind.Number;
         return this;
     }
 
     public ParseState PushOperator(TokenKind op)
     {
         if (op == TokenKind.Minus &&
-            (_lastToken is null
-             || _lastToken is TokenKind.LeftParenthesis
-             || _lastToken is TokenKind.Plus
-             || _lastToken is TokenKind.Minus
-             || _lastToken is TokenKind.Star
-             || _lastToken is TokenKind.Slash
-             || _lastToken is TokenKind.Caret
-             || _lastToken is TokenKind.UnaryMinus))
+            (lastToken is null
+             || lastToken is TokenKind.LeftParenthesis
+             || lastToken is TokenKind.Plus
+             || lastToken is TokenKind.Minus
+             || lastToken is TokenKind.Star
+             || lastToken is TokenKind.Slash
+             || lastToken is TokenKind.Caret
+             || lastToken is TokenKind.UnaryMinus))
         {
             op = TokenKind.UnaryMinus;
         }
@@ -55,15 +55,14 @@ public sealed class ParseState
         }
 
         Operators.Push(op);
-        _lastToken = op;
+        lastToken = op;
         return this;
     }
-
 
     public ParseState OpenParen()
     {
         Operators.Push(TokenKind.LeftParenthesis);
-        _lastToken = TokenKind.LeftParenthesis;
+        lastToken = TokenKind.LeftParenthesis;
         return this;
     }
 
@@ -73,7 +72,7 @@ public sealed class ParseState
             ApplyTop();
         if (Operators.Count == 0 || Operators.Pop() != TokenKind.LeftParenthesis)
             throw new Exception("Mismatched parentheses");
-        _lastToken = TokenKind.RightParenthesis;
+        lastToken = TokenKind.RightParenthesis;
         return this;
     }
 
@@ -99,16 +98,16 @@ public sealed class ParseState
             return;
         }
 
-        var rhs = Values.Pop();
-        var lhs = Values.Pop();
+        var rightHandSide = Values.Pop();
+        var leftHandSide = Values.Pop();
 
         Values.Push(op switch
         {
-            TokenKind.Plus => new Addition(lhs, rhs),
-            TokenKind.Minus => new Subtraction(lhs, rhs),
-            TokenKind.Star => new Multiplication(lhs, rhs),
-            TokenKind.Slash => new Division(lhs, rhs),
-            TokenKind.Caret => new Power(lhs, rhs),
+            TokenKind.Plus => new Addition(leftHandSide, rightHandSide),
+            TokenKind.Minus => new Subtraction(leftHandSide, rightHandSide),
+            TokenKind.Star => new Multiplication(leftHandSide, rightHandSide),
+            TokenKind.Slash => new Division(leftHandSide, rightHandSide),
+            TokenKind.Caret => new Power(leftHandSide, rightHandSide),
             _ => throw new Exception($"Unexpected operator {op}")
         });
     }

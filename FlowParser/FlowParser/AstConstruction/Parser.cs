@@ -15,16 +15,9 @@ public sealed class Parser
 
     private static readonly Flow<Token> onNumber =
         TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.PushNumber(a.Text)));
-    private static readonly Flow<Token> onPlus =
-        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.PushOperator(TokenKind.Plus)));
-    private static readonly Flow<Token> onMinus =
-        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.PushOperator(TokenKind.Minus)));
-    private static readonly Flow<Token> onStar =
-        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.PushOperator(TokenKind.Star)));
-    private static readonly Flow<Token> onSlash =
-        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.PushOperator(TokenKind.Slash)));
-    private static readonly Flow<Token> onCaret =
-        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.PushOperator(TokenKind.Caret)));
+
+    private static Flow<Token> onOperator =>
+        TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.PushOperator(a.Kind)));
     private static readonly Flow<Token> onLParen =
         TokenFlow(a => Pulse.Manipulate<ParseState>(ctx => ctx.OpenParen()));
     private static readonly Flow<Token> onRParen =
@@ -36,16 +29,23 @@ public sealed class Parser
         from _ in Pulse.Trace(ctx.Value.Finish())
         select token;
 
+    private static readonly TokenKind[] operators =
+        [ TokenKind.Plus
+        , TokenKind.Minus
+        , TokenKind.Star
+        , TokenKind.Slash
+        , TokenKind.Caret
+        ];
+
+    private static bool IsOperator(Token token)
+        => operators.Contains(token.Kind);
+
     private static readonly Flow<Token> flow =
         from token in Pulse.Start<Token>()
         from _ in Pulse.Gather(new ParseState())
         from __ in Pulse.FirstOf(
             (() => token.Kind == TokenKind.Number, () => Pulse.ToFlow(onNumber, token)),
-            (() => token.Kind == TokenKind.Plus, () => Pulse.ToFlow(onPlus, token)),
-            (() => token.Kind == TokenKind.Minus, () => Pulse.ToFlow(onMinus, token)),
-            (() => token.Kind == TokenKind.Star, () => Pulse.ToFlow(onStar, token)),
-            (() => token.Kind == TokenKind.Slash, () => Pulse.ToFlow(onSlash, token)),
-            (() => token.Kind == TokenKind.Caret, () => Pulse.ToFlow(onCaret, token)),
+            (() => IsOperator(token), () => Pulse.ToFlow(onOperator, token)),
             (() => token.Kind == TokenKind.LeftParenthesis, () => Pulse.ToFlow(onLParen, token)),
             (() => token.Kind == TokenKind.RightParenthesis, () => Pulse.ToFlow(onRParen, token)),
             (() => token.Kind == TokenKind.End, () => Pulse.ToFlow(onEnd, token))
