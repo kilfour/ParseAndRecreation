@@ -43,8 +43,8 @@ public class Parser
 
     private static int Precedence(TokenKind kind) => kind switch
     {
-        TokenKind.UnaryMinus => 5,
-        TokenKind.Caret => 4,
+        TokenKind.Caret => 5,
+        TokenKind.UnaryMinus => 4,
         TokenKind.Star or TokenKind.Slash => 3,
         TokenKind.Plus or TokenKind.Minus => 2,
         _ => 0

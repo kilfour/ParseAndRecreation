@@ -50,15 +50,15 @@ public class EdgeCaseTests
     public void Power_Vs_UnaryMinus()
     {
         var ast = LostIn.Translation("-1^2");
-        var node = Assert.IsType<Power>(ast);
-        //       (^)
-        //      /   \
-        //    (-)     2
+        var node = Assert.IsType<UnaryMinus>(ast);
+        //    (-)
         //     |
-        //     1
-        var min = Assert.IsType<UnaryMinus>(node.Left);
-        Assert.Equal(1, Assert.IsType<Number>(min.Value).Value);
-        Assert.Equal(2, Assert.IsType<Number>(node.Right).Value);
+        //    (^)
+        //   /   \
+        //  1     2
+        var pow = Assert.IsType<Power>(node.Value);
+        Assert.Equal(1, Assert.IsType<Number>(pow.Left).Value);
+        Assert.Equal(2, Assert.IsType<Number>(pow.Right).Value);
     }
 
     [Fact]
