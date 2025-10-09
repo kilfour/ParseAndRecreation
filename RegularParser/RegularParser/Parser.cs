@@ -64,6 +64,13 @@ public class Parser
         if (IsUnaryMinus(op))
             op = TokenKind.UnaryMinus;
 
+        if (op == TokenKind.UnaryMinus)
+        {
+            Operators.Push(op);
+            lastToken = op;
+            return;
+        }
+
         while (Operators.Count > 0 && Operators.Peek() != TokenKind.LParen)
         {
             var top = Operators.Peek();
@@ -100,7 +107,7 @@ public class Parser
         while (Operators.Count > 0 && Operators.Peek() != TokenKind.LParen)
             ApplyTop();
         if (Operators.Count == 0 || Operators.Pop() != TokenKind.LParen)
-            throw new Exception("Mismatched parentheses");
+            throw new InvalidOperationException("Mismatched parentheses");
         lastToken = TokenKind.RParen;
     }
 
@@ -109,22 +116,30 @@ public class Parser
         while (Operators.Count > 0)
         {
             if (Operators.Peek() == TokenKind.LParen)
-                throw new Exception("Mismatched parentheses");
+                throw new InvalidOperationException("Mismatched parentheses");
             ApplyTop();
         }
-        return Values.Count == 1 ? Values.Pop() : throw new Exception("Parse error");
+        return Values.Count == 1 ? Values.Pop() : throw new InvalidOperationException("Parse error");
     }
 
     private void ApplyTop()
     {
+        if (Operators.Count == 0)
+            throw new InvalidOperationException("Operator stack empty");
+
         var op = Operators.Pop();
 
         if (op == TokenKind.UnaryMinus)
         {
+            if (Values.Count < 1)
+                throw new InvalidOperationException("Unary '-' missing operand");
             var value = Values.Pop();
             Values.Push(new UnaryMinus(value));
             return;
         }
+
+        if (Values.Count < 2)
+            throw new InvalidOperationException($"Operator '{op}' missing operands");
 
         var rightHandSide = Values.Pop();
         var leftHandSide = Values.Pop();
@@ -136,7 +151,7 @@ public class Parser
             TokenKind.Star => new Multiplication(leftHandSide, rightHandSide),
             TokenKind.Slash => new Division(leftHandSide, rightHandSide),
             TokenKind.Caret => new Power(leftHandSide, rightHandSide),
-            _ => throw new Exception($"Unexpected operator {op}")
+            _ => throw new InvalidOperationException($"Unexpected operator {op}")
         });
     }
 }
