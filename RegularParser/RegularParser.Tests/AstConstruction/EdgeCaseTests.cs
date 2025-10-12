@@ -136,13 +136,13 @@ public class EdgeCaseTests
     [Fact]
     public void Empty_Input_Fails()
     {
-        Assert.Throws<InvalidOperationException>(() => LostIn.Translation(""));
+        Assert.Throws<Exception>(() => LostIn.Translation(""));
     }
 
     [Fact]
     public void Mismatched_Paren_Fails()
     {
-        Assert.Throws<InvalidOperationException>(() => LostIn.Translation("(1+2"));
+        Assert.Throws<Exception>(() => LostIn.Translation("(1+2"));
         Assert.Throws<InvalidOperationException>(() => LostIn.Translation("1+2)"));
     }
 

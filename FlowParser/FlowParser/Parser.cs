@@ -15,7 +15,7 @@ public sealed class Parser
 
     private static readonly Flow<Token> flow =
         from token in Pulse.Start<Token>()
-        from _ in Pulse.Gather(new ParseState())
+        from _ in Pulse.Prime(() => new ParseState())
         from __ in Pulse.FirstOf(
             (() => token.Kind == TokenKind.Number, /**/ () => Manipulate((a, ctx) => ctx.PushNumber(a.Text))),
             (() => token.IsOperator,               /**/ () => Manipulate((a, ctx) => ctx.PushOperator(a.Kind))),
@@ -26,10 +26,10 @@ public sealed class Parser
 
     public static AstNode Parse(IEnumerable<Token> tokens) =>
         Signal.From(flow)
-            .SetArtery(new TheCollector<AstNode>())
+            .SetArtery(TheCollector.Exhibits<AstNode>())
             .Pulse(tokens)
             .FlatLine(Pulse.Trace<ParseState>(a => a.Finish()))
-            .GetArtery<TheCollector<AstNode>>()
+            .GetArtery<Collector<AstNode>>()
             .TheExhibit.Last();
 }
 

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Definitions.Lexing;
 using QuickAcid;
 using QuickFuzzr;
@@ -12,28 +13,27 @@ public class ComparingParsersTest
     public void Check()
     {
         var script =
-            from expression in "expr".Input(Expression(2), a => a.ReduceWith(Reducer))
+            from expression in "expr".Input(Expression(5), a => a.ReduceWith(Reducer))
             from traceExpression in "original expr".Trace(() => expression)
             from rpResult in "RP".ActCarefully(() => RegularParser.LostIn.Translation(expression).Eval())
-            from fpResult in "FP".Act(() => FlowParser.LostIn.Translation(expression).Eval())
-            from traceResult in "RP vs FP".Trace(() => rpResult.Value.ToString() + " /= " + fpResult.ToString())
-            from noExc in "RP does not throw".Spec(() => !rpResult.Threw)
-            from match in "Match".SpecIf(() => !rpResult.Threw, () => fpResult == rpResult.Value)
+            from fpResult in "FP".ActCarefully(() => LostIn.Translation(expression).Eval())
+            from noExcRP in "RP does not throw".Spec(() => !rpResult.Threw)
+            from noExcFP in "FP does not throw".Spec(() => !fpResult.Threw)
+            from traceResult in "RP vs FP".Trace(() => rpResult.Value.ToString() + " /= " + fpResult.Value.ToString())
+            from complexResult in "Both Complex".SpecIf(() => double.IsNaN(rpResult.Value), () => double.IsNaN(fpResult.Value))
+            from match in "Match".SpecIf(() => !rpResult.Threw && !double.IsNaN(rpResult.Value), () => fpResult.Value == rpResult.Value)
             select Acid.Test;
-        QState.Run(script, 215942572)
-            .Options(a => a with { FileAs = "RPvsFP" })//, Diagnose = WriteData.ToFile() })
-            .With(20.Runs())
+        QState.Run(script)
+            .Options(a => a with { FileAs = "RPvsFP" })
+            .With(200.Runs())
             .AndOneExecutionPerRun();
     }
 
     [Fact]
     public void Generation()
     {
-        Expression(10).Many(20).Generate().PulseToLog("generated.log");
+        Expression(5).Many(200).Generate().PulseToLog("generated.log");
     }
-
-    private static readonly Generator<char> Digit = Fuzz.ChooseFromThese("0123456789".ToCharArray());
-    private static readonly Generator<char> NonZero = Fuzz.ChooseFromThese("123456789".ToCharArray());
 
     public static readonly Generator<string> Number = Fuzz.Int(1, 4).AsString();
 
@@ -102,14 +102,25 @@ public class ComparingParsersTest
 
     private IEnumerable<string> Reducer(string expr)
     {
+        foreach (var item in RemoveOperations(expr))
+            yield return item;
+
+        string output = Regex.Replace(expr, @"\([^()]*\)", "2");
+        yield return output;
+        foreach (var item in RemoveOperations(output))
+            yield return item;
+
+    }
+
+    private static IEnumerable<string> RemoveOperations(string expr)
+    {
         var tokens = Lexer.Tokenize(expr);
         tokens = tokens.Where(a => a.Kind != TokenKind.LParen && a.Kind != TokenKind.RParen);
         yield return TokensToString(tokens);
-
-
         var list = tokens.ToList();
         for (int i = 0; i < list.Count; i++)
         {
+            yield return TokensToString(tokens.Skip(i));
             if (list[i].IsOperator && !list[i + 1].IsOperator)
                 yield return TokensToString(tokens.Skip(i + 1));
         }
@@ -119,9 +130,8 @@ public class ComparingParsersTest
             if (list[i].IsOperator && !list[i - 1].IsOperator)
                 yield return TokensToString(tokens.Take(i));
         }
-
     }
 
-    private string TokensToString(IEnumerable<Token> tokens)
+    private static string TokensToString(IEnumerable<Token> tokens)
         => string.Join("", tokens.Select(a => a.Text));
 }

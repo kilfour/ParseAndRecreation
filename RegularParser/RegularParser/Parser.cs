@@ -111,15 +111,15 @@ public class Parser
         lastToken = TokenKind.RParen;
     }
 
-    private AstNode Finish()
+    public AstNode Finish()
     {
         while (Operators.Count > 0)
         {
             if (Operators.Peek() == TokenKind.LParen)
-                throw new InvalidOperationException("Mismatched parentheses");
+                throw new Exception("Mismatched parentheses");
             ApplyTop();
         }
-        return Values.Count == 1 ? Values.Pop() : throw new InvalidOperationException("Parse error");
+        return Values.Count == 1 ? Values.Pop() : throw new Exception("Parse error");
     }
 
     private void ApplyTop()

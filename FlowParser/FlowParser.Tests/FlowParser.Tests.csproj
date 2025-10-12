@@ -24,7 +24,7 @@
     <ProjectReference Include="..\..\RegularParser\RegularParser\RegularParser.csproj" />
     <ProjectReference Include="..\FlowParser\FlowParser.csproj" />
     <ProjectReference Include="..\..\..\QuickAcid\QuickAcid\QuickAcid.csproj" />
-    <ProjectReference Include="..\..\..\QuickPulse.Show\QuickPulse.Show\QuickPulse.Show.csproj" />
+    <!-- <ProjectReference Include="..\..\..\QuickPulse.Show\QuickPulse.Show\QuickPulse.Show.csproj" /> -->
   </ItemGroup>
 
 </Project>

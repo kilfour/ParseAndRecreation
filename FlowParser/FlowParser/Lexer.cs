@@ -31,9 +31,9 @@ public static partial class Lexer
 
     private static readonly Flow<char> flushNumber =
         from input in Pulse.Start<char>()
-        from valid in Pulse.EffectIf<string>(
-            a => a != string.Empty && !IsValidDecimal(a),
-            () => throw new Exception($"Invalid decimal"))
+        from current in Pulse.Draw<string>()
+        let valid = current != string.Empty && !IsValidDecimal(current)
+            ? throw new Exception($"Invalid decimal") : true
         from _ in Pulse.TraceIf<string>(
             a => a != string.Empty,
             a => new Token(TokenKind.Number, a, 666))
@@ -44,9 +44,9 @@ public static partial class Lexer
 
     private static readonly Flow<char> flow =
         from input in Pulse.Start<char>()
-        from context in Pulse.Gather(string.Empty)
+        from context in Pulse.Prime(() => string.Empty)
         from flush in Pulse.ToFlowIf(
-            !IsDecimalChar(input) && context.Value != string.Empty,
+            !IsDecimalChar(input) && context != string.Empty,
             flushNumber, () => input
         )
         from _ in Pulse.FirstOf(
@@ -58,9 +58,9 @@ public static partial class Lexer
 
     public static IEnumerable<Token> Tokenize(string input) =>
         Signal.From(flow)
-            .SetArtery(new TheCollector<Token>())
+            .SetArtery(TheCollector.Exhibits<Token>())
             .Pulse(input.Append('\0'))
-            .GetArtery<TheCollector<Token>>()
+            .GetArtery<Collector<Token>>()
             .TheExhibit;
 }
 
